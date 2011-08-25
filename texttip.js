@@ -122,24 +122,60 @@ Clear the tip on specified elements.
             .dropTo(el).atCenter().atMiddle();
     }
 
-    function clearHover(i, dom){
+    function findDataTarget(dom, data){
         var el = $(dom);
         var i = elQueue.length;
         while(i--){
             var cursor = elQueue[i];
             if (cursor.input.get(0) == el.get(0)){
-                cursor.input.attr('title', cursor.tip).blur();
-                cursor.hover.remove();
-                elQueue.splice(i, 1);
+                if (data!=null){
+                    data.value = cursor;
+                }
+                return i;
             }
         }
+        return -1;
+    }
+
+    function clearHover(i, dom){
+        var data = {};
+        i = findDataTarget(dom, data);
+        if (i < 0){
+            return;
+        }
+        data.value.input.attr('title', data.value.tip).blur();
+        data.value.hover.remove();
+        elQueue.splice(i, 1);
+    }
+
+    function hideHover(i, dom){
+        var data = {};
+        i = findDataTarget(dom, data);
+        if (i < 0){
+            return;
+        }
+        data.value.hover.hide();
     }
 
     function hookEvents(el, hover) {
         // autocomplete sucks, even we hooked to below events,
         // we still cannot detect value changed by autocomplete feature in all case
         // considering disable it by using autocomplete=off or kick of loop checking textbox value.
-        el.blur(handleBlur).focus(handleFocus).change(handleChange).bind('input', handleChange);
+        el
+            .blur(handleBlur)
+            .focus(handleFocus)
+            .change(handleChange)
+            .bind('input', handleChange)
+            .bind('propertychange',(function(callback){
+                return function(){
+                    var el = $(this), dkey = 'prevText';
+                    var pt = el.data(dkey);
+                    el.data(dkey, el.val());
+                    if (pt !== el.val()){
+                        callback.apply(this, arguments);
+                    }
+                };
+            })(handleChange));
 
         // comment out as jquery will do this for us and this bind may cause incompatibility issue in ie 6
         // .bind('propertychange', handleChange);
@@ -206,7 +242,10 @@ Clear the tip on specified elements.
                 method = method.toLowerCase();
                 switch(method){
                     case 'clear':
-                        return this.each(init);
+                        return this.each(clearHover);
+                        break;
+                    case 'hide':
+                        return this.each(hideHover);
                         break;
                     default:
                         if (options == null){
