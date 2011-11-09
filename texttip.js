@@ -28,7 +28,7 @@ JQuery plugin: texttipClear
 Clear the tip on specified elements.
 
 */
-(function ($) {
+(function ($, etui) {
     var defaultOptions = {
         className: null,
         chainUpdate: true,
@@ -257,7 +257,7 @@ Clear the tip on specified elements.
         input.click();
     }
 
-    $.fn.extend({
+    var exports = {
         texttip: function (method, options) {
             if (Object.prototype.toString.call(method) == '[object String]'){
                 method = method.toLowerCase();
@@ -285,5 +285,14 @@ Clear the tip on specified elements.
         texttipClear: function(){
             return this.each(clearHover);
         }
-    });
-})(jQuery);
+    };
+
+    $.fn.extend(exports);
+
+    // add etui compatible plugin
+    // if etui is loaded
+    if (etui && etui.$ && !(etui.$.fn.texttip)){
+        etui.$.extend(exports);
+    }
+
+})(window.jQuery, window.etui);
