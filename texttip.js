@@ -8,12 +8,20 @@ when input gets the focus, tip will be disappeared.
 Usage:
 // init texttip
 $('.target').texttip('hoveringElementClass');
+$('.target').texttip({
+    className: 'hoveringElementClass',
+    chainUpdate: false,
+    autoPosition: false
+});
 // clearing hovered tips on the page
 $('.target').texttipClear();
 
 Options:
 className - class name for the hovering element.
 chainUpdate - true or false, true to update all hover state when one textbox value was updated. (fix browser autocomplete)
+autoPosition - repositioning hover element when window resized.
+hideOnFocus - hide the watermark when input gets focus
+
 
 JQuery plugin: texttipClear
 
@@ -23,7 +31,9 @@ Clear the tip on specified elements.
 (function ($) {
     var defaultOptions = {
         className: null,
-        chainUpdate: true
+        chainUpdate: true,
+        autoPosition: true,
+        hideOnFocus: true
     };
 
     var dataKey = 'texttipdata';
@@ -93,8 +103,6 @@ Clear the tip on specified elements.
     }
 
     function cloneCss(hover, el){
-        // coodinates relative to doc
-        var offset = el.offset();
         var size = {
             width: el.width(),
             height: el.height()
@@ -158,6 +166,8 @@ Clear the tip on specified elements.
     }
 
     function hookEvents(el, hover) {
+        var ieInputEventFixDkey = 'prevText';
+
         // autocomplete sucks, even we hooked to below events,
         // we still cannot detect value changed by autocomplete feature in all case
         // considering disable it by using autocomplete=off or kick of loop checking textbox value.
@@ -168,14 +178,15 @@ Clear the tip on specified elements.
             .bind('input', handleChange)
             .bind('propertychange',(function(callback){
                 return function(){
-                    var el = $(this), dkey = 'prevText';
-                    var pt = el.data(dkey);
-                    el.data(dkey, el.val());
+                    var el = $(this);
+                    var pt = el.data(ieInputEventFixDkey);
+                    el.data(ieInputEventFixDkey, el.val());
                     if (pt !== el.val()){
                         callback.apply(this, arguments);
                     }
                 };
-            })(handleChange));
+            })(handleChange))
+            .data(ieInputEventFixDkey, el.val());
 
         // comment out as jquery will do this for us and this bind may cause incompatibility issue in ie 6
         // .bind('propertychange', handleChange);
@@ -189,7 +200,9 @@ Clear the tip on specified elements.
         var i = elQueue.length;
         while(i--){
             var cursor = elQueue[i];
-            cloneCss(cursor.hover, cursor.input);
+            if (cursor.autoPosition){
+                cloneCss(cursor.hover, cursor.input);
+            }
         }
     }
 
@@ -210,8 +223,11 @@ Clear the tip on specified elements.
     }
 
     function handleFocus() {
-        $(this).data(dataKey)
-            .hover.hide();
+        var data = $(this).data(dataKey);
+
+        if (data.settings.hideOnFocus){
+            data.hover.hide();
+        }
     }
 
     function handleChange(){
@@ -229,9 +245,14 @@ Clear the tip on specified elements.
 
     function handleClick(evt) {
         evt.stopPropagation();
-        var input = $(this).hide()
-            .data(dataKey)
-            .input;
+        var $el = $(this),
+            data = $el.data(dataKey),
+            input = data.input;
+        
+        if (data.settings.hideOnFocus){
+            $el.hide();
+        }
+
         input.focus();
         input.click();
     }
