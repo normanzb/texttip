@@ -91,7 +91,8 @@ Clear the tip on specified elements.
             settings: settings,
             input: el,
             hover: hover,
-            tip: tip
+            tip: tip,
+            virgin: true
         };
 
         elQueue.push(data);
@@ -232,13 +233,22 @@ Clear the tip on specified elements.
 
     function handleChange(){
         var data = $(this).data(dataKey);
+
+        // if someone touched her.. then we are not going to display
+        // the texttip when there is no char in it.
+        if (data.input.val() !== false){
+            data.virgin = false;
+        }
+
         data.hover.hide();
 
         // clear hover when autocomplete
         if (data.settings.chainUpdate){
             var i = elQueue.length;
             while(i--){
-                handleBlur.call(elQueue[i].input);
+                if (elQueue[i].input != data.input){
+                    handleBlur.call(elQueue[i].input);
+                }
             }
         }
     }
