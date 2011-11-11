@@ -302,7 +302,7 @@ Clear the tip on specified elements.
     // add etui compatible plugin
     // if etui is loaded
     if (etui && etui.$ && !(etui.$.fn.texttip)){
-        etui.$.extend(exports);
+        etui.$.fn.extend(exports);
     }
 
 })(window.jQuery, window.etui);
