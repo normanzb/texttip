@@ -126,6 +126,7 @@ Clear the tip on specified elements.
                 marginLeft: el.css('marginLeft'),
                 marginRight: el.css('marginRight'),
                 marginBottom: el.css('marginBottom'),
+                lineHeight: el.css('lineHeight'),
                 cursor: 'text'
             })
             .dropTo(el).atCenter().atMiddle();
