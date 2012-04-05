@@ -36,7 +36,7 @@ Clear the tip on specified elements.
         hideOnFocus: true
     };
 
-    var dataKey = 'texttipdata';
+    var dataKey = 'texttipdata', propVisitor = $.fn.prop? 'prop': 'attr';
 
     var settingsHolder = {};
 
@@ -63,7 +63,7 @@ Clear the tip on specified elements.
         var settings = {};
         $.extend(settings, settingsHolder);
 
-        var tagName = el.attr('tagName').toLowerCase();
+        var tagName = el[propVisitor]('tagName').toLowerCase();
         // if it is not a input or input without title attr, bypass it.
         if ((tagName != 'input' &&
             tagName != 'textarea') ||
